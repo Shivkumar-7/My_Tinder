@@ -1,8 +1,8 @@
-require('dotenv').config(); 
-const conf = {   
-    dataBaseUrl: process.env.DATABASE_URL,
-    port: process.env.PORT,
-    jwt_key: process.env.JWTKEY,
-    front: process.env.FRONTURL,
-}
-module.exports = conf;
+require("dotenv").config();
+
+module.exports = {
+  port: process.env.PORT,
+  dataBaseUrl: process.env.DATABASE_URL,
+  jwtkey: process.env.JWTKEY,
+  front: process.env.FRONTURL, // Frontend URL
+};

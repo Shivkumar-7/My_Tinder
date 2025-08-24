@@ -1,13 +1,14 @@
 const mongoose = require("mongoose");
-const data = require("../conf/conf");
- 
+const conf = require("../conf/conf");
+
 const connectDB = async () => {
-    await mongoose.connect(
-        data.dataBaseUrl
-    )
-}
+  try {
+    await mongoose.connect(conf.dataBaseUrl);
+    console.log("✅ MongoDB connected successfully");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+    throw err;
+  }
+};
 
 module.exports = connectDB;
-
-// user - kumar00shiv00k123
-// pass - 7T5hJKXUWBCFphEr
