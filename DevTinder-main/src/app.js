@@ -1,61 +1,50 @@
-import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import cors from "cors";
-
-// Load environment variables
-dotenv.config();
+const express = require("express");
+const connectDB = require("./config/database");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const conf = require("./conf/conf");
 
 const app = express();
 
-// ✅ CORS FIX
+// Use Render's PORT, fallback to conf.port or 4000 for local dev
+const PORT = process.env.PORT || conf.port || 4000;
+
+// Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://devtinder-main.onrender.com"], // allow local + deployed frontend
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // allow cookies/session
+    origin: process.env.FRONTURL || conf.front || "http://localhost:5173",
+    credentials: true,
   })
 );
 
 app.use(express.json());
+app.use(cookieParser());
 
-// ✅ MongoDB Connection
-const connectDB = async () => {
-  try {
-    if (!process.env.DATABASE_URL) {
-      throw new Error("❌ DATABASE_URL is not defined in environment variables");
-    }
+// Routers
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
 
-    await mongoose.connect(process.env.DATABASE_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
 
-    console.log("✅ MongoDB connected successfully");
-  } catch (err) {
-    console.error("❌ MongoDB connection failed:", err.message);
-    process.exit(1); // stop app if DB fails
-  }
-};
-
-connectDB();
-
-// ✅ Routes
-import authRoutes from "./routes/auth.js";
-import profileRoutes from "./routes/profile.js";
-import feedRoutes from "./routes/feed.js";
-
-app.use("/auth", authRoutes);
-app.use("/profile", profileRoutes);
-app.use("/feed", feedRoutes);
-
-// ✅ Default route
+// ✅ Root test route (fixes "Cannot GET /")
 app.get("/", (req, res) => {
-  res.send("🚀 DevTinder backend running!");
+  res.send("🚀 Backend is running on Render");
 });
 
-// ✅ Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// Connect to DB and start server
+connectDB()
+  .then(() => {
+    console.log("✅ Database connection established");
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Database connection failed:", err.message);
+    console.error(err);
+  });
