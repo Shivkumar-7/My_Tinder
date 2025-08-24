@@ -1,43 +1,61 @@
-const express = require("express");
-const connectDB = require("./config/database");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cors from "cors";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-// ✅ Connect to MongoDB
-connectDB();
-
-// ✅ CORS setup
+// ✅ CORS FIX
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",                  // local frontend
-      "https://devtinder-frontend.onrender.com" // deployed frontend (replace with your actual link)
-    ],
-    credentials: true, // allow cookies & auth headers
+    origin: ["http://localhost:5173", "https://devtinder-main.onrender.com"], // allow local + deployed frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // allow cookies/session
   })
 );
 
 app.use(express.json());
-app.use(cookieParser());
+
+// ✅ MongoDB Connection
+const connectDB = async () => {
+  try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("❌ DATABASE_URL is not defined in environment variables");
+    }
+
+    await mongoose.connect(process.env.DATABASE_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log("✅ MongoDB connected successfully");
+  } catch (err) {
+    console.error("❌ MongoDB connection failed:", err.message);
+    process.exit(1); // stop app if DB fails
+  }
+};
+
+connectDB();
 
 // ✅ Routes
-const authRouter = require("./routes/auth");
-const profileRouter = require("./routes/profile");
-const feedRouter = require("./routes/feed");
+import authRoutes from "./routes/auth.js";
+import profileRoutes from "./routes/profile.js";
+import feedRoutes from "./routes/feed.js";
 
-app.use("/auth", authRouter);
-app.use("/profile", profileRouter);
-app.use("/feed", feedRouter);
+app.use("/auth", authRoutes);
+app.use("/profile", profileRoutes);
+app.use("/feed", feedRoutes);
 
-// ✅ Test route
+// ✅ Default route
 app.get("/", (req, res) => {
-  res.send("✅ Backend is running on Render!");
+  res.send("🚀 DevTinder backend running!");
 });
 
-// ✅ Start server
+// ✅ Start Server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
