@@ -1,25 +1,37 @@
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const data = require("../conf/conf")
+const conf = require("../conf/conf"); // make sure this is correct
 
-const userAuth = async(req, res, next) => {
-          try {
-            const {token} = req.cookies;
-            if(!token){
-               return res.status(401).send("please login..");
-            }
-            const decodeObj = await jwt.verify(token, data.jwt_key);
-            const {_id} = decodeObj;
+// Middleware to protect routes
+const userAuth = async (req, res, next) => {
+  try {
+    // Get token from cookies
+    const { token } = req.cookies;
+    if (!token) {
+      return res.status(401).json({ message: "Please login." });
+    }
 
-            const user = await User.findById(_id);
-            if(!user){
-                throw new Error("User Not Found...");
-            }
+    // Verify JWT token
+    if (!conf.jwtkey) {
+      throw new Error("JWT secret key is not defined!");
+    }
 
-            req.user = user;
-            next();
-          } catch (error) {
-           res.status(400).send("Eroor: " + error.message);
-          }
+    const decoded = jwt.verify(token, conf.jwtkey);
+    const { _id } = decoded;
+
+    // Fetch user from database
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Attach user to request object
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error("Auth error:", error.message);
+    res.status(401).json({ message: "Authentication failed: " + error.message });
+  }
 };
-module.exports = {userAuth};
+
+module.exports = { userAuth };

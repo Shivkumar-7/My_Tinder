@@ -32,7 +32,7 @@ app.use("/", userRouter);
 // connecting data base from cluster
 connectDB().then (()=>{
   console.log("Database connection Establised....")
-    app.listen(7777, () => {
+    app.listen(PORT, () => {
     console.log("server successfully and Created on port number 7777")
   })
 })
