@@ -4,44 +4,40 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const app = express();
-
-// ✅ PORT (Render will assign one)
 const PORT = process.env.PORT || 4000;
 
-// ✅ Middleware
+// ✅ Connect to MongoDB
+connectDB();
+
+// ✅ CORS setup
 app.use(
   cors({
-    origin: process.env.FRONTURL || "http://localhost:5173",
-    credentials: true,
+    origin: [
+      "http://localhost:5173",                  // local frontend
+      "https://devtinder-frontend.onrender.com" // deployed frontend (replace with your actual link)
+    ],
+    credentials: true, // allow cookies & auth headers
   })
 );
 
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Routers
+// ✅ Routes
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
-const requestRouter = require("./routes/request");
-const userRouter = require("./routes/user");
+const feedRouter = require("./routes/feed");
 
-app.use("/", authRouter);
-app.use("/", profileRouter);
-app.use("/", requestRouter);
-app.use("/", userRouter);
+app.use("/auth", authRouter);
+app.use("/profile", profileRouter);
+app.use("/feed", feedRouter);
 
-// ✅ Root test route
+// ✅ Test route
 app.get("/", (req, res) => {
-  res.send("🚀 Backend is running on Render");
+  res.send("✅ Backend is running on Render!");
 });
 
-// ✅ Connect to DB & start server
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ Server failed to start:", err.message);
-  });
+// ✅ Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
