@@ -1,23 +1,22 @@
 const mongoose = require("mongoose");
-const data = require("../conf/conf");
 
 const connectDB = async () => {
   try {
-    // Prevent multiple connections (important for Render / serverless)
-    if (mongoose.connection.readyState >= 1) {
-      console.log("✅ Database already connected");
-      return;
+    const mongoURI = process.env.DATABASE_URL; // Render Env Variable
+
+    if (!mongoURI) {
+      throw new Error("❌ DATABASE_URL is not defined in environment variables");
     }
 
-    await mongoose.connect(data.dataBaseUrl, {
+    await mongoose.connect(mongoURI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
 
-    console.log("✅ Database connected successfully...");
+    console.log("✅ MongoDB connected successfully");
   } catch (err) {
-    console.error("❌ Database connection failed:", err.message);
-    process.exit(1); // Exit if DB connection fails
+    console.error("❌ MongoDB connection failed:", err.message);
+    throw err;
   }
 };
 
