@@ -1,12 +1,12 @@
 import axios from "axios";
 import { BASE_URL } from "./constants";
 
-// Ensure single slash
+// ✅ Helper to avoid double slashes
 const joinUrl = (path) => `${BASE_URL}/${path.replace(/^\/+/, "")}`;
 
 const API = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // cookies are sent
+  withCredentials: true, // send cookies
 });
 
 // ===== AUTH =====
@@ -15,16 +15,20 @@ export const loginUser = (data) => API.post(joinUrl("login"), data);
 export const logoutUser = () => API.post(joinUrl("logout"));
 
 // ===== PROFILE =====
-export const getProfile = () => API.get(joinUrl("profile/view")); 
-export const updateProfile = (data) => API.put(joinUrl("profile"), data);
+export const getProfile = () => API.get(joinUrl("profile/view"));
+export const updateProfile = (data) => API.patch(joinUrl("profile/edit"), data);
 
-// ===== USER =====
-export const getUsers = () => API.get(joinUrl("user")); // ✅ matches backend /user
+// ===== FEED =====
+export const getFeed = () => API.get(joinUrl("feed"));
+
+// ===== CONNECTIONS =====
+export const getConnections = () => API.get(joinUrl("user/connections"));
 
 // ===== REQUESTS =====
-export const getRequests = () => API.get(joinUrl("request")); // ✅ backend has /request (singular)
-export const sendRequest = (data) => API.post(joinUrl("request"), data);
-export const respondRequest = (requestId, action) =>
-  API.put(joinUrl(`request/${requestId}`), { action }); // ✅ use PUT or whatever backend expects
+export const getRequests = () => API.get(joinUrl("user/requests/recieved"));
+export const sendRequest = (status, toUserId) =>
+  API.post(joinUrl(`request/send/${status}/${toUserId}`));
+export const reviewRequest = (status, requestId) =>
+  API.post(joinUrl(`request/review/${status}/${requestId}`));
 
 export default API;
