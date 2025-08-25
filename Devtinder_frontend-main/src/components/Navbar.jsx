@@ -25,7 +25,7 @@ const Navbar = () => {
     <>
     <div className="navbar bg-slate-500 h-24">
     <div className="flex-1">
-    <Link to = "/" className="btn btn-ghost text-xl">DevTinder</Link>
+    <Link to = "/" className="btn btn-ghost text-xl">WithMe_OR_NOT</Link>
   </div>
   <div className="flex gap-10 p-16 ">
     <div className="form-control">
