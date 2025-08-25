@@ -9,23 +9,25 @@ const conf = require("./conf/conf");
 const PORT = process.env.PORT || conf.port || 4000;
 
 // ===== CORS Setup =====
-// Allow your Vercel frontend and localhost for dev
+// Allow your Vercel frontend + localhost
 const allowedOrigins = [
-  conf.front.replace(/\/$/, ""), // remove trailing slash if any
-  "http://localhost:5173"
-];
+  conf.front?.replace(/\/$/, ""), // from config
+  "http://localhost:5173",        // local dev
+].filter(Boolean); // remove undefined/null
 
 app.use(cors({
-  origin: function(origin, callback) {
-    // allow requests with no origin (like Postman)
+  origin: function (origin, callback) {
+    // ✅ allow requests with no origin (like Postman / curl)
     if (!origin) return callback(null, true);
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn("❌ CORS blocked for origin:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true
+  credentials: true, // ✅ allow cookies (important for login sessions)
 }));
 
 // ===== Middlewares =====
@@ -53,7 +55,8 @@ connectDB()
   .then(() => {
     console.log("Database connection established...");
     app.listen(PORT, () => {
-      console.log(`Server successfully started on port ${PORT}`);
+      console.log(`🚀 Server successfully started on port ${PORT}`);
+      console.log("✅ Allowed origins:", allowedOrigins);
     });
   })
   .catch((err) => {
